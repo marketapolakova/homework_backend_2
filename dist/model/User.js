@@ -25,7 +25,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importStar(require("mongoose"));
 var userSchema = new mongoose_1.Schema({
-    username: { type: String, required: true, minlength: 3, maxlength: 15 },
+    username: {
+        type: String,
+        required: [true, "username is required"],
+        minlength: [3, "min length for username is 3 characters"],
+        maxlength: [15, "maximum length for username is 15 characters"],
+    },
     password: { type: String, required: true },
 });
 var User = mongoose_1.default.model("User", userSchema);

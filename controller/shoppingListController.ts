@@ -33,11 +33,11 @@ router.get("/", isAuthenticated, (req: Request, res: Response) => {
 
 // get list by id
 router.get(
-  "/:id",
+  "/:listId",
   isAuthenticated,
   isOwnerOrContributor,
   (req: Request, res: Response) => {
-    const listId = req.params.listid;
+    const listId = req.params.listId;
     ShoppingList.findById(
       listId,
 
@@ -79,19 +79,19 @@ router.post("/", isAuthenticated, (req: Request, res: Response) => {
 
 // delete shopping list
 router.delete(
-  "/:id",
+  "/:listId",
   isAuthenticated,
   isOwner,
   (req: Request, res: Response) => {
     ShoppingList.findByIdAndDelete(
-      req.params.listid,
+      req.params.listId,
       (err: Error | undefined) => {
         if (err) {
           return res.status(400).json(new ErrorResponse("error", [err]));
         } else {
           return res
             .status(200)
-            .json({ status: "deleted", errors: [], data: req.params.id });
+            .json({ status: "deleted", errors: [], data: req.params.listId });
         }
       }
     );
@@ -99,37 +99,42 @@ router.delete(
 );
 
 // update shopping list
-router.put("/:id", isAuthenticated, isOwner, (req: Request, res: Response) => {
-  if (!req.body.name)
-    return res
-      .status(400)
-      .json(new ErrorResponse("error", ["new name not filled"]));
-  ShoppingList.findByIdAndUpdate(
-    req.params.listid,
-    req.body,
-    { new: true, rawResult: true, runValidators: true },
-    (err: Error | undefined | CallbackError) => {
-      if (err) {
-        return res.status(400).json(new ErrorResponse("error", [err]));
-      } else {
-        return res.status(200).json({
-          status: "updated",
-          data: { id: req.params.id, body: req.body },
-          errors: [],
-        });
+router.put(
+  "/:listId",
+  isAuthenticated,
+  isOwner,
+  (req: Request, res: Response) => {
+    if (!req.body.name)
+      return res
+        .status(400)
+        .json(new ErrorResponse("error", ["new name not filled"]));
+    ShoppingList.findByIdAndUpdate(
+      req.params.listId,
+      req.body,
+      { new: true, rawResult: true, runValidators: true },
+      (err: Error | undefined | CallbackError) => {
+        if (err) {
+          return res.status(400).json(new ErrorResponse("error", [err]));
+        } else {
+          return res.status(200).json({
+            status: "updated",
+            data: { listId: req.params.listId, body: req.body },
+            errors: [],
+          });
+        }
       }
-    }
-  );
-});
+    );
+  }
+);
 
 // add item to shopping list
 router.post(
-  "/:id/item",
+  "/:listId/item",
   isAuthenticated,
   isOwnerOrContributor,
   (req: Request, res: Response) => {
     ShoppingList.findByIdAndUpdate(
-      req.params.listid,
+      req.params.listId,
 
       {
         $push: { items: req.body },
@@ -141,7 +146,7 @@ router.post(
         } else {
           return res.status(200).json({
             status: "updated",
-            data: { id: req.params.id, body: req.body },
+            data: { listId: req.params.listId, body: req.body },
             errors: [],
           });
         }
@@ -152,14 +157,14 @@ router.post(
 
 // rename item in shopping list
 router.put(
-  "/:id/item/:itemid",
+  "/:listId/item/:itemid",
   isAuthenticated,
   isOwnerOrContributor,
   (req: Request, res: Response) => {
     console.log(req.body);
 
     ShoppingList.findByIdAndUpdate(
-      req.params.listid,
+      req.params.listId,
 
       {
         $set: {
@@ -184,12 +189,12 @@ router.put(
 
 // delete item from shopping list
 router.delete(
-  "/:id/item/:itemid",
+  "/:listId/item/:itemid",
   isAuthenticated,
   isOwnerOrContributor,
   (req: Request, res: Response) => {
     ShoppingList.findByIdAndUpdate(
-      req.params.listid,
+      req.params.listId,
 
       {
         $pull: { items: { _id: req.params.itemid } },
@@ -212,12 +217,12 @@ router.delete(
 
 // check item in shopping list
 router.get(
-  "/:id/item/:itemid/mark",
+  "/:listId/item/:itemid/mark",
   isAuthenticated,
   isOwnerOrContributor,
   (req: Request, res: Response) => {
     ShoppingList.findByIdAndUpdate(
-      req.params.listid,
+      req.params.listId,
 
       {
         $set: { items: { _id: req.params.itemid, checked: true } },
@@ -240,12 +245,12 @@ router.get(
 
 // add contributor
 router.post(
-  "/:id/contributor",
+  "/:listId/contributor",
   isAuthenticated,
   isOwner,
   (req: Request, res: Response) => {
     ShoppingList.findByIdAndUpdate(
-      req.params.listid,
+      req.params.listId,
       {
         $push: { contributors: req.body },
       },
@@ -267,12 +272,12 @@ router.post(
 
 // delete contributor
 router.delete(
-  "/:id/contributor/:contributorid",
+  "/:listId/contributor/:contributorid",
   isAuthenticated,
   isOwner,
   (req: Request, res: Response) => {
     ShoppingList.findByIdAndUpdate(
-      req.params.listid,
+      req.params.listId,
       {
         $pull: { contributors: { _id: req.params.contributorid } },
       },

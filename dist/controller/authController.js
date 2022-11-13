@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var bcrypt_1 = __importDefault(require("bcrypt"));
-var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var User_1 = __importDefault(require("../model/User"));
 var router = express_1.default.Router();
 router.post("/register", function (req, res) {
@@ -35,7 +34,9 @@ router.post("/register", function (req, res) {
                         password: hash,
                     });
                     user.save();
-                    res.status(200).json({ status: "user created", errors: [] });
+                    res
+                        .status(200)
+                        .json({ status: "user created", errors: [], data: req.body });
                 });
             }
         });
@@ -65,10 +66,9 @@ router.post("/login", function (req, res) {
                     });
                 }
                 else {
-                    var token = jsonwebtoken_1.default.sign({ foundUser: foundUser }, process.env.JWT_SECRET, {
-                        expiresIn: "7d",
-                    });
-                    res.status(200).json({ status: "logged in", errors: [], token: token });
+                    res
+                        .status(200)
+                        .json({ status: "logged in", errors: [], data: req.body });
                 }
             });
         }

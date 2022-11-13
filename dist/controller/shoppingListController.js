@@ -25,13 +25,13 @@ router.get("/", isAuthenticated_1.default, function (req, res) {
         else {
             return res
                 .status(200)
-                .json({ status: "success", errors: [], data: lists });
+                .json({ status: "success", errors: [], data: req.body });
         }
     });
 });
 // get list by id
-router.get("/:listid", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
-    var listId = req.params.listid;
+router.get("/:listId", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
+    var listId = req.params.listId;
     ShoppingList_1.default.findById(listId, function (err, list) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
@@ -44,7 +44,7 @@ router.get("/:listid", isAuthenticated_1.default, isOwnerOrContributor_1.default
         else {
             return res
                 .status(200)
-                .json({ status: "success", data: list, errors: [] });
+                .json({ status: "success", data: req.body, errors: [] });
         }
     });
 });
@@ -62,124 +62,144 @@ router.post("/", isAuthenticated_1.default, function (req, res) {
             return res.status(400).json({ status: "error", errors: [err] });
         }
         else {
-            res.status(201).json({ status: "created", data: result, errors: [] });
+            res.status(201).json({ status: "created", data: req.body, errors: [] });
         }
     });
 });
 // delete shopping list
-router.delete("/:listid", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
-    ShoppingList_1.default.findByIdAndDelete(req.params.listid, function (err) {
+router.delete("/:listId", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
+    ShoppingList_1.default.findByIdAndDelete(req.params.listId, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res.status(200).json({ status: "deleted", errors: [] });
+            return res
+                .status(200)
+                .json({ status: "deleted", errors: [], data: req.params.listId });
         }
     });
 });
 // update shopping list
-router.put("/:listid", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
+router.put("/:listId", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
     if (!req.body.name)
         return res
             .status(400)
             .json(new errorResponse_1.default("error", ["new name not filled"]));
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, req.body, { new: true, rawResult: true }, function (err, updatedList) {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, req.body, { new: true, rawResult: true, runValidators: true }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res
-                .status(200)
-                .json({ status: "updated", data: updatedList, errors: [] });
+            return res.status(200).json({
+                status: "updated",
+                data: { listId: req.params.listId, body: req.body },
+                errors: [],
+            });
         }
     });
 });
 // add item to shopping list
-router.post("/:listid/item", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, {
+router.post("/:listId/item", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, {
         $push: { items: req.body },
-    }, { new: true, rawResult: true }, function (err, updatedList) {
+    }, { new: true, rawResult: true, runValidators: true }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res
-                .status(200)
-                .json({ status: "updated", data: updatedList, errors: [] });
+            return res.status(200).json({
+                status: "updated",
+                data: { listId: req.params.listId, body: req.body },
+                errors: [],
+            });
         }
     });
 });
 // rename item in shopping list
-router.put("/:listid/item/:itemid", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
+router.put("/:listId/item/:itemid", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
     console.log(req.body);
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, {
         $set: {
             items: { _id: req.params.itemid, name: req.body.name },
         },
-    }, { new: true, rawResult: true }, function (err, updatedList) {
+    }, { new: true, rawResult: true, runValidators: true }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res
-                .status(200)
-                .json({ status: "updated", data: updatedList, errors: [] });
+            return res.status(200).json({
+                status: "updated",
+                data: { paramas: req.params, body: req.body },
+                errors: [],
+            });
         }
     });
 });
 // delete item from shopping list
-router.delete("/:listid/item/:itemid", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, {
+router.delete("/:listId/item/:itemid", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, {
         $pull: { items: { _id: req.params.itemid } },
-    }, function (err, updatedList) {
+    }, { new: true, rawResult: true, runValidators: true, upsert: true }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res
-                .status(200)
-                .json({ status: "deleted", data: updatedList, errors: [] });
+            return res.status(200).json({
+                status: "deleted",
+                data: { params: req.params },
+                errors: [],
+            });
         }
     });
 });
 // check item in shopping list
-router.get("/:listid/item/:itemid/mark", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, {
+router.get("/:listId/item/:itemid/mark", isAuthenticated_1.default, isOwnerOrContributor_1.default, function (req, res) {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, {
         $set: { items: { _id: req.params.itemid, checked: true } },
-    }, { new: true, rawResult: true }, function (err, updatedList) {
+    }, { new: true, rawResult: true, runValidators: true }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res
-                .status(200)
-                .json({ status: "updated", data: updatedList, errors: [] });
+            return res.status(200).json({
+                status: "updated",
+                data: { params: req.params },
+                errors: [],
+            });
         }
     });
 });
 // add contributor
-router.post("/:listid/contributor", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, {
+router.post("/:listId/contributor", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, {
         $push: { contributors: req.body },
-    }, { new: true, rawResult: true }, function (err, updatedList) {
+    }, { new: true, rawResult: true, runValidators: true }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res.status(204).json({ status: "updated", errors: [] });
+            return res.status(204).json({
+                status: "updated",
+                errors: [],
+                data: { params: req.params, body: req.body },
+            });
         }
     });
 });
 // delete contributor
-router.delete("/:listid/contributor/:contributorid", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
-    ShoppingList_1.default.findByIdAndUpdate(req.params.listid, {
+router.delete("/:listId/contributor/:contributorid", isAuthenticated_1.default, isOwner_1.default, function (req, res) {
+    ShoppingList_1.default.findByIdAndUpdate(req.params.listId, {
         $pull: { contributors: { _id: req.params.contributorid } },
-    }, function (err, updatedList) {
+    }, function (err) {
         if (err) {
             return res.status(400).json(new errorResponse_1.default("error", [err]));
         }
         else {
-            return res.status(204).json({ status: "updated", errors: [] });
+            return res.status(204).json({
+                status: "updated",
+                errors: [],
+                data: { params: req.params },
+            });
         }
     });
 });

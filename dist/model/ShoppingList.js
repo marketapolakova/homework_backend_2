@@ -26,7 +26,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importStar(require("mongoose"));
 var Item_1 = require("./Item");
 var shoppingListSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
+    name: {
+        type: String,
+        required: [true, "name is required"],
+        minlength: [3, "Min length of name is 3 characters"],
+        maxlength: [30, "Max length of name is 30 characters"],
+    },
     items: [Item_1.itemSchema],
     owner: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
     contributors: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }],
