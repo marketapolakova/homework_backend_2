@@ -1,6 +1,6 @@
 const ShoppingList = require("../model/ShoppingList");
 
-const isOwner = (req, res, next) => {
+const isOwnerOrContributor = (req, res, next) => {
   const userId = req.user.foundUser._id;
 
   ShoppingList.findById(req.params.listid, (err, list) => {
@@ -22,4 +22,4 @@ const isOwner = (req, res, next) => {
   });
 };
 
-module.exports = isOwner;
+module.exports = isOwnerOrContributor;
