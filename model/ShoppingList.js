@@ -1,8 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import IShoppingList from "../interface/shoppingList";
-import { itemSchema } from "./Item";
+const mongoose = require("mongoose");
+const { Schema } = require("mongoose");
 
-const shoppingListSchema = new Schema<IShoppingList>({
+const { itemSchema } = require("./Item");
+
+const shoppingListSchema = new Schema({
   name: {
     type: String,
     required: [true, "name is required"],
@@ -15,4 +16,4 @@ const shoppingListSchema = new Schema<IShoppingList>({
 });
 
 const ShoppingList = mongoose.model("ShoppingList", shoppingListSchema);
-export default ShoppingList;
+module.exports = ShoppingList;

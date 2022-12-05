@@ -1,7 +1,7 @@
-import mongoose, { Schema } from "mongoose";
-import IItem from "../interface/item";
+const mongoose = require("mongoose");
+const { Schema } = require("mongoose");
 
-export const itemSchema = new Schema<IItem>({
+const itemSchema = new Schema({
   name: {
     type: String,
     required: [true, "name is required"],
@@ -16,4 +16,5 @@ export const itemSchema = new Schema<IItem>({
 });
 
 const Item = mongoose.model("Item", itemSchema);
-export default Item;
+module.exports = Item;
+module.exports.itemSchema = itemSchema;

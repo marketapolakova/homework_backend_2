@@ -1,9 +1,7 @@
-import { RequestHandler, Request } from "express";
-import jwt from "jsonwebtoken";
-import IUser from "../interface/user";
+const jwt = require("jsonwebtoken");
 
-const isAuthenticated: RequestHandler = (req: Request, res, next) => {
-  const authHeader: string | undefined = req.headers["authorization"];
+const isAuthenticated = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (!token)
     return res.status(401).json({ status: "error", errors: ["unauthorized"] });
@@ -17,4 +15,4 @@ const isAuthenticated: RequestHandler = (req: Request, res, next) => {
   });
 };
 
-export default isAuthenticated;
+module.exports = isAuthenticated;

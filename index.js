@@ -1,12 +1,11 @@
-import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+const express = require("express");
+require("dotenv").config();
+const mongoose = require("mongoose");
 
-import shoppingListController from "./controller/shoppingListController";
-import authController from "./controller/authController";
+const shoppingListController = require("./controller/shoppingListController");
+const authController = require("./controller/authController");
 
-const app: Express = express();
-dotenv.config();
+const app = express();
 
 const PORT = process.env.PORT || 8000;
 
