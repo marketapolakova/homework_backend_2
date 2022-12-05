@@ -7,7 +7,7 @@ const ShoppingList = require("../model/ShoppingList");
 
 const router = express.Router();
 
-// get all lists for user
+// get all lists by certain user
 router.get("/", isAuthenticated, (req, res) => {
   ShoppingList.find({ owner: req.user.foundUser._id }, (err, lists) => {
     if (err) return res.status(400).json({ status: "error", errors: [err] });
@@ -21,6 +21,24 @@ router.get("/", isAuthenticated, (req, res) => {
       return res
         .status(200)
         .json({ status: "success", errors: [], data: req.body });
+    }
+  });
+});
+
+// create shopping list
+router.post("/", isAuthenticated, (req, res) => {
+  const body = req.body;
+  const _shoppingList = new ShoppingList({
+    name: body.name,
+    items: body.items,
+    owner: req.user.foundUser._id,
+    contributors: body.contributors || [],
+  });
+  _shoppingList.save((err, result) => {
+    if (err) {
+      return res.status(400).json({ status: "error", errors: [err] });
+    } else {
+      res.status(201).json({ status: "created", data: req.body, errors: [] });
     }
   });
 });
@@ -48,37 +66,6 @@ router.get("/:listId", isAuthenticated, isOwnerOrContributor, (req, res) => {
   );
 });
 
-// create shopping list
-router.post("/", isAuthenticated, (req, res) => {
-  const body = req.body;
-  const _shoppingList = new ShoppingList({
-    name: body.name,
-    items: body.items,
-    owner: req.user.foundUser._id,
-    contributors: body.contributors || [],
-  });
-  _shoppingList.save((err, result) => {
-    if (err) {
-      return res.status(400).json({ status: "error", errors: [err] });
-    } else {
-      res.status(201).json({ status: "created", data: req.body, errors: [] });
-    }
-  });
-});
-
-// delete shopping list
-router.delete("/:listId", isAuthenticated, isOwner, (req, res) => {
-  ShoppingList.findByIdAndDelete(req.params.listId, (err) => {
-    if (err) {
-      return res.status(400).json(new ErrorResponse("error", [err]));
-    } else {
-      return res
-        .status(200)
-        .json({ status: "deleted", errors: [], data: req.params.listId });
-    }
-  });
-});
-
 // update shopping list
 router.put("/:listId", isAuthenticated, isOwner, (req, res) => {
   if (!req.body.name)
@@ -101,6 +88,19 @@ router.put("/:listId", isAuthenticated, isOwner, (req, res) => {
       }
     }
   );
+});
+
+// delete shopping list
+router.delete("/:listId", isAuthenticated, isOwner, (req, res) => {
+  ShoppingList.findByIdAndDelete(req.params.listId, (err) => {
+    if (err) {
+      return res.status(400).json(new ErrorResponse("error", [err]));
+    } else {
+      return res
+        .status(200)
+        .json({ status: "deleted", errors: [], data: req.params.listId });
+    }
+  });
 });
 
 // add item to shopping list
@@ -182,34 +182,6 @@ router.delete(
         } else {
           return res.status(200).json({
             status: "deleted",
-            data: { params: req.params },
-            errors: [],
-          });
-        }
-      }
-    );
-  }
-);
-
-// check item in shopping list
-router.get(
-  "/:listId/item/:itemid/mark",
-  isAuthenticated,
-  isOwnerOrContributor,
-  (req, res) => {
-    ShoppingList.findByIdAndUpdate(
-      req.params.listId,
-
-      {
-        $set: { items: { _id: req.params.itemid, checked: true } },
-      },
-      { new: true, rawResult: true, runValidators: true },
-      (err) => {
-        if (err) {
-          return res.status(400).json(new ErrorResponse("error", [err]));
-        } else {
-          return res.status(200).json({
-            status: "updated",
             data: { params: req.params },
             errors: [],
           });
